@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="binding.js"></script>
+    </head>
+    <body>
+        <label for="txtName">Name <input type="text" name="txtName" value="" id="txtName"></label><br>
+        <label for="txtSurname">Surname <input type="text" name="txtSurname" value="" id="txtSurname"></label>
+        <br>
+        <div id="divMessage">            
+        </div>
+        <button type="" id="btnSave">Save</button>
+        <button type="" id="btnReset">Reset</button>
+    </body>
+    <script type="text/javascript">
+        window.onload = function(){
+
+            var person =  new Person("John", "Smith");
+
+            var txtName = document.getElementById("txtName");
+            var txtSurname = document.getElementById("txtSurname");
+
+            txtName.onchange = function(){
+                person.name = txtName.value;
+            };
+
+            txtSurname.onchange = function(){
+                person.surname = txtSurname.value;
+            };
+
+            console.log(person);
+
+            setTimeout(function(){
+                person.name = "Mario";
+                person.surname = "Cart";
+                console.log(person);
+            }, 10000);
+
+        }                   
+    </script>
+</html>

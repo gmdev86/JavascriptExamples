@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    </head>
+    <body>
+        <label for="txtName">Name <input type="text" name="txtName" value="" id="txtName"></label><br>
+        <label for="txtSurname">Surname <input type="text" name="txtSurname" value="" id="txtSurname"></label>
+        <br>
+        <div id="divMessage">            
+        </div>
+        <button type="" id="btnSave">Save</button>
+        <button type="" id="btnReset">Reset</button>
+    </body>
+    <script type="text/javascript">
+        window.onload = function(){
+
+            function httpGet(url,onSuccess,onFailure){
+                var httpReq = new XMLHttpRequest();
+
+                httpReq.onreadystatechange = function(){
+                    var data;
+
+                    if(httpReq.readyState == 4){
+                        if(httpReq.status == 200){
+                            data = JSON.parse(httpReq.responseText);
+                            onSuccess(data);
+                        } else {
+                            onFailure(httpReq.responseText);
+                        }
+                    }
+                };
+
+                httpReq.open("GET",url, true);
+                httpReq.send();
+            }
+
+            function getUserData(){
+                return httpGet("https://jsonplaceholder.typicode.com/posts/1",displayBlog,err);
+            }
+
+            function getBlog(){
+                return httpGet("https://jsonplaceholder.typicode.com/comments",displayAlbum,err);
+            }
+
+            function displayBlog(blog){
+                console.log(blog);
+                getBlog();
+            }
+
+            function displayAlbum(album){
+                console.log(album);
+            }
+
+            function err(errorMessage){
+                console.log(errorMessage);
+            }
+
+            getUserData();
+
+        }                   
+    </script>
+</html>

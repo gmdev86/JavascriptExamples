@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Saving Files via IndexedDB</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">      
+  <title>Saving Files via IndexedDB</title>
+  <style>
+    html {
+      padding: 0;
+      margin: 0;
+    }
+    
+    body {
+      padding: 0 0 0 2em;
+      margin: 0;
+    }
+        
+    button {
+      margin-right: 1em;
+      box-shadow: 2px 2px 8px #306; /* Purple box shadow. */
+    }
+    
+    #messages {
+      border: 1px black solid;
+      width: 25.35em;      
+      margin-top: 1em;
+      padding: 0 1em;      
+    }    
+    
+    #fileSelector {
+      display: none;
+      width: 33em;
+    }
+  </style>
+</head>
+
+<body id="bodyElement">
+  <h1>Saving Files via IndexedDB</h1>
+  <div>
+    <button id="openButton">Create/Open DB</button> <!-- Clicking this opens the database. If there's no database to open, a database is created. -->
+    <button id="populateButton">Populate DB</button>    
+    <button id="displayButton">Display DB</button>    
+    <button id="deleteButton">Delete DB</button>    
+  </div>
+  <div id="messages">
+    <p>If the database does not exist, clicking <strong>Create/Open DB</strong> creates it. If the database already exists, clicking <strong>Create/Open DB</strong> opens it.</p>
+    <p>Thus, you must click the <strong>Create/Open DB</strong> button before clicking the <strong>Populate DB</strong> button.</p>
+  </div>
+  <p>
+    <input type="file" id="fileSelector" multiple size="24"> <!-- Only display this element when the database is ready. -->
+  </p>
+  <script>
+    var dbGlobals = {}; // Store all indexedDB related objects in a global object called "dbGlobals".
+    dbGlobals.db = null; // The database object will eventually be stored here.    
+    dbGlobals.description = "This database is used to store files locally."; // The description of the database.
+    dbGlobals.name = "localFileStorage"; // The name of the database.
+    dbGlobals.version = 1; // Must be >= 1. Be aware that a database of a given name may only have one version at a time, on the client machine.     
+    dbGlobals.storeName = "fileObjects"; // The name of the database's object store. Each object in the object store is a file object.
+    dbGlobals.message = ""; // When useful, contains one or more HTML strings to display to the user in the 'messages' DIV box.
+    dbGlobals.empty = true; // Indicates whether or not there's one or more records in the database object store. The object store is initially empty, so set this to true.
+
+    // ---------------------------------------------------------------------------------------------------
+  
+    function requiredFeaturesSupported() {      
+      switch(window.location.protocol) { // To work, IndexedDB pages must be served via the http or https protocol (or, for apps in the new Windows UI, ms-wwa or ms-wwa-web protocols).
+        case "http:":
+          break;
+        case "https:":
+          break;
+        case "ms-wwa-web:": // For apps in the new Windows UI, IndexedDB works in local content loaded in the web context.
+          break;
+        case "ms-wwa:": // For apps in the new Windows UI, IndexedDB works in the local context.
+          break;          
+        default:
+          document.getElementById('bodyElement').innerHTML = "<h3>IndexedDB pages must be served via the http:// or https:// protocol - resolve this issue and try again.</h3>";
+          return false;
+      } // switch
+    
+      if (!document.getElementById('fileSelector').files) {
+        document.getElementById('bodyElement').innerHTML = "<h3>File API is not fully supported - upgrade your browser to the latest version.</h3>";
+        return false;
+      }
+        
+      if (!window.indexedDB) {
+        if (window.mozIndexedDB) {
+          window.indexedDB = window.mozIndexedDB;
+        }
+        else if (window.webkitIndexedDB) {
+          window.indexedDB = webkitIndexedDB;
+          IDBCursor = webkitIDBCursor;
+          IDBDatabaseException = webkitIDBDatabaseException;
+          IDBRequest = webkitIDBRequest;
+          IDBKeyRange = webkitIDBKeyRange;
+          IDBTransaction = webkitIDBTransaction;
+        }
+        else {
+          document.getElementById('bodyElement').innerHTML = "<h3>IndexedDB is not supported - upgrade your browser to the latest version.</h3>";
+          return false;
+        }
+      } // if
+      
+      if (!window.indexedDB.deleteDatabase) { // Not all implementations of IndexedDB support this method, thus we test for it here.
+        document.getElementById('bodyElement').innerHTML = "<h3>The required version of IndexedDB is not supported.</h3>";    
+        return false;      
+      }
+
+      return true;
+    } // requiredFeaturesSupported
+            
+    // ---------------------------------------------------------------------------------------------------    
+    
+    if (requiredFeaturesSupported()) {
+      // Add event listeners for the four database related buttons:
+      document.getElementById('openButton').addEventListener('click', openDB, false);
+      document.getElementById('populateButton').addEventListener('click', populateDB, false);
+      document.getElementById('displayButton').addEventListener('click', displayDB, false);
+      document.getElementById('deleteButton').addEventListener('click', deleteDB, false);
+      
+      // Add an event listener for the file <input> element so the user can select some files to store in the database:
+      document.getElementById('fileSelector').addEventListener('change', handleFileSelection, false); // Add an onchange event listener for the <input id="fileSelector"> element.
+    } // if
+
+    // ---------------------------------------------------------------------------------------------------
+    
+    function displayMessage(message) {
+      document.getElementById('messages').innerHTML = message;
+    } // displayMessage
+
+    // ---------------------------------------------------------------------------------------------------
+                            
+    function openDB() {
+      console.log("openDB()");
+      displayMessage("<p>The database will be created/opened here...</p>");      
+    } // openDB
+
+    // ---------------------------------------------------------------------------------------------------
+    
+    function openDB_onblocked(evt) {
+      console.log("openDB_onupgradeneeded()");
+    
+      var message = "<p>The database is blocked - error code: " + (evt.target.error ? evt.target.error : evt.target.errorCode) + "</p>"; // Some browsers may only support the errorCode property.
+      message += "</p>If this page is open in other browser windows, close these windows.</p>";          
+      
+      displayMessage(message);
+    }
+
+    // ---------------------------------------------------------------------------------------------------
+    
+    function openDB_onupgradeneeded(evt) {
+      console.log("openDB_onupgradeneeded()");
+    } // openDB_onupgradeneeded
+    
+    // ---------------------------------------------------------------------------------------------------
+    
+    function openDB_onsuccess(evt) {  
+      console.log("openDB_onsuccess()");
+    } // openDBsuccess
+
+    // ---------------------------------------------------------------------------------------------------
+        
+    function handleFileSelection(evt) {    
+      console.log("handleFileSelection()");    
+
+      var files = evt.target.files; // The files selected by the user (as a FileList object).
+      if (!files) {
+        displayMessage("<p>At least one selected file is invalid - do not select any folders.</p><p>Please reselect and try again.</p>");
+        return;
+      }
+      
+      // The variable "files" is an array of file objects. 
+      var message = "<ul style='margin: 1em 0 1em -1em;'>";
+      for (var i = 0, file; file = files[i]; i++) {
+        message += "<li>" + file.name + " file object will be added to the database here...</li>";
+      } // for
+      message += "</ul>";
+      displayMessage(message);
+      
+      document.getElementById('fileSelector').style.display = "none"; // The file(s) have already been selected so remove the "file picker" dialog box.
+    } // handleFileSelection
+
+    // ---------------------------------------------------------------------------------------------------
+        
+    function populateDB() {
+      console.log("populateDB()");    
+    
+      document.getElementById('fileSelector').style.display = "block"; // Now that we have a valid database, allow the user to put file(s) in it.
+      
+      var message = "<p>Using the below <strong>Browse</strong> button, select one or more files to store in the database.</p>";
+      message += "<p>Then, click the <strong>Display DB</strong> button to display what's currently in the database.</p>";
+      displayMessage(message);        
+    } // populateDB
+
+    // ---------------------------------------------------------------------------------------------------
+    
+    function displayDB() {
+      console.log("displayDB()");    
+      displayMessage("<p>Items in the database will be displayed here...</p>");
+    } // displayDB
+
+    // ---------------------------------------------------------------------------------------------------
+
+    function deleteDB() {
+      console.log("deletedDB()");
+      displayMessage("<p>The database will be deleted here...</p>");      
+    } // deleteDB
+  </script>
+</body>
+
+</html>

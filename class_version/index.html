@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="Controller.js"></script>
+        <script type="text/javascript" src="View.js"></script>
+        <script type="text/javascript" src="Model.js"></script>
+    </head>
+    <body>
+        <label for="txtName">Name <input type="text" name="txtName" value="" id="txtName"></label><br>
+        <label for="txtSurname">Surname <input type="text" name="txtSurname" value="" id="txtSurname"></label>
+        <br>
+        <div id="divMessage">            
+        </div>
+        <button type="" id="btnSave">Save</button>
+        <button type="" id="btnReset">Reset</button>
+    </body>
+    <script type="text/javascript">
+        window.onload = function(){
+            var model = new Model("John", "Smith");
+            var controller = new Controller();
+            var view = new View(model, controller);
+
+            controller.initialize(model, view);
+        }
+    </script>
+</html>

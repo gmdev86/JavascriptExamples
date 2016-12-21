@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="observables.js"></script>
+    </head>
+    <body>
+        <label for="txtName">Name <input type="text" name="txtName" value="" id="txtName"></label><br>
+        <label for="txtSurname">Surname <input type="text" name="txtSurname" value="" id="txtSurname"></label>
+        <br>
+        <div id="divMessage">            
+        </div>
+        <button type="" id="btnSave">Save</button>
+        <button type="" id="btnReset">Reset</button>
+    </body>
+    <script type="text/javascript">
+        window.onload = function(){
+            function Person(name, surname){
+                this.name = name;
+                this.surname = surname;
+            };
+
+            var john = observable("John");
+            var smith = observable("Smith");
+            var txtName = document.getElementById("txtName");
+            var txtSurname = document.getElementById("txtSurname");
+
+            person = new Person(john, smith);
+
+            console.log(person);
+
+            txtName.value = person.name();
+            txtSurname.value = person.surname();
+
+            person.name.subscribe(function(value){
+                txtName.value = value;
+            });
+
+            person.surname.subscribe(function(value){
+                txtSurname.value = value;
+            });
+
+            function u() {
+                person.name("Mario");
+                person.surname("Rossi");
+            }
+
+            window.setInterval(u, 5000); 
+
+        }                   
+    </script>
+</html>

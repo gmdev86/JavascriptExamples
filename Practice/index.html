@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title></title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script type="text/javascript" src="js/main.js"></script>
+    </head>
+    <body>
+
+        <div id="div1"></div>
+        <div id="div2"></div>
+        <div id="div3"></div>
+
+        <script type="text/javascript">
+                _("div1").innerHTML = "Howdy Doody Pilgrim";    
+
+                if (!window.indexedDB) {
+                    window.alert("Your browser doesn't support a stable version of IndexedDB. Such and such feature will not be available.");
+                }else{
+                    console.log("indexedDB is supported");
+
+                    //create database
+                    var request = window.indexedDB.open("MyTestDatabase", 1);
+
+                    request.onerror = function(event) {
+                    // Do something with request.errorCode!
+                        console.log("failer");
+                    };
+                    request.onsuccess = function(event) {
+                    // Do something with request.result!
+                        console.log("success");
+                    };
+
+                    request.onupgradeneeded = function(event) {
+                        var db = event.target.result;
+
+                        // Create an objectStore to hold information about our customers. We're
+                        // going to use "ssn" as our key path because it's guaranteed to be
+                        // unique - or at least that's what I was told during the kickoff meeting.
+                        var objectStore = db.createObjectStore("customers", { keyPath: "ssn" });
+
+                        // Create an index to search customers by name. We may have duplicates
+                        // so we can't use a unique index.
+                        objectStore.createIndex("name", "name", { unique: false });
+
+                        // Create an index to search customers by email. We want to ensure that
+                        // no two customers have the same email, so use a unique index.
+                        objectStore.createIndex("email", "email", { unique: true });
+
+                        // Create another object store called "test" with the autoIncrement flag set
+                        var objectStore2 = db.createObjectStore()
+
+                        // Use transaction oncomplete to make sure the objectStore creation is 
+                        // finished before adding data into it.
+                        objectStore.transaction.oncomplete = function(event) {
+                            // Store values in the newly created objectStore.
+                            var customerObjectStore = db.transaction("customers", "readwrite").objectStore("customers");
+                            for (var i in customerData) {
+                            customerObjectStore.add(customerData[i]);
+                            }
+                        };
+                    };
+
+                }
+        </script>
+
+    </body>
+</html>

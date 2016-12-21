@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript" src="codify.js"></script>
+    </head>
+    <body>
+       <div>
+            <h1>_JL : A really small JavaScript Framework</h1>
+            <h2>An ID based object framework For quick visual things</h2>
+            <h4>651 bytes minimized!</h4>
+            Makes writing visual javascript easy! For example, toggling visibility on the id="text" element:
+            <pre>
+    onclick="_('text').toggle();"
+            </pre>
+            <div style="clear:both"></div>
+            <div style="margin:10px; padding:5px; border:1px solid #666; width:500px;">
+                DEMO:<br /><br />
+                <input id="button" type="button" value="Change" onclick="btnTransform('Changed Text')"/>
+                <input id="button3" type="button" value="Error" onclick="btnError('Stuff')"/>
+                <input id="button1" type="button" value="Hide" onclick="btnHide()"/>
+                <input id="button2" type="button" value="Show" onclick="btnShow()"/>
+                <input id="button4" type="button" value="red" onclick="btnBgColor('#ff0000')"/>
+                <input id="button5" type="button" value="white" onclick="btnBgColor('#ffffff')"/>
+                <input id="button6" type="button" value="toggle" onclick="toggle();"/>
+                <input id="button8" type="button" value="Event Chaining" onclick="chain();"/>
+                <input id="button9" type="button" value="About" onclick="about();"/>
+
+                <br />
+                <input id="text" type="text" value="default" style="margin:50px"/>
+                <div id="showAbout"></div>
+                
+<pre id="codeBlock">function(){
+    console.log('this is a test');
+}</pre>
+    
+    
+                <script type="text/javascript">
+
+                    function btnTransform(newValue) {
+                        _('#text').val(newValue);
+                        var obj = new _('#text');
+                        obj.val("I am a persistant object");
+                    }
+                    function btnError(newValue) {
+                        _('#text').val(newValue).bgcolor('#3477B4');
+                    }
+                    function btnHide() {
+                        _('#text').hide();
+                    }
+                    function btnShow() {
+                        _('#text').show();
+                    }
+                    function btnBgColor(color) {
+                        _('#text').bgcolor(color);
+                    }
+                    function toggle() {
+                        _('#text').toggle();
+                    }
+                    function chain() {
+                        _('#text').size(200, 400).bgcolor('#3477B4');
+                    }
+                    function about(){
+                        _('#showAbout').about();
+                    }
+                    
+                    _('#codeBlock').codeIt();
+
+                </script>
+            </div>
+
+        </div>
+
+    </body>
+</html>

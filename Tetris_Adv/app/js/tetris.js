@@ -1,11 +1,14 @@
 const canvas = document.getElementById("tetris");
 const context = canvas.getContext("2d");
+const canvasOverlay = document.getElementById('tetrisOverlay');
+const overlayCtx = canvasOverlay.getContext("2d");
 const nextPieceCanvas = document.getElementById('nextPiece');
 const nextPieceCtx = nextPieceCanvas.getContext("2d");
 
 //scale up
 context.scale(20, 20);
-nextPieceCtx.scale(20, 20);
+nextPieceCtx.scale(3, 3);
+overlayCtx.scale(2.91, 2.91);
 
 function arenaSweep(){
     let rowCount = 1;
@@ -140,16 +143,28 @@ function nextPiece(){
     //generate piece for first time
     if(player.nextPiece === null){
         player.matrix = createPiece(pieces[pieces.length *  Math.random() | 0]);
-        player.nextPiece = createPiece(pieces[pieces.length *  Math.random() | 0]);
+        //player.nextPiece = createPiece(pieces[pieces.length *  Math.random() | 0]);
     } else {
         player.matrix = player.nextPiece;
-        player.nextPiece = createPiece(pieces[pieces.length *  Math.random() | 0]);
+        //player.nextPiece = createPiece(pieces[pieces.length *  Math.random() | 0]);
     }
     //show next piece in window
     //clear canvas
     nextPieceCtx.fillStyle = '#000';
     nextPieceCtx.fillRect(0, 0, canvas.width, canvas.height);
-    drawNextPieceMatrix(player.nextPiece);
+    //drawNextPieceMatrix(player.nextPiece);
+    nextPieceImage();
+};
+
+function nextPieceImage(){
+    var img = new Image();
+
+    img.src = "img/L1.png";
+
+    img.onload = function(){
+        nextPieceCtx.drawImage(img, 0, 0);
+        overlayCtx.drawImage(img, 0, 0);
+    }; 
 };
 
 //Transpose + Reverse = Rotate
@@ -259,6 +274,7 @@ const player = {
     matrix: null,
     score: 0,
     nextPiece: null,
+    nextPieceImage: null,
 }
 
 document.addEventListener('keydown', event => {

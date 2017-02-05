@@ -6,9 +6,11 @@ const nextPieceCanvas = document.getElementById('nextPiece');
 const nextPieceCtx = nextPieceCanvas.getContext("2d");
 
 //scale up
+
+//work on fixing scale so that 1px = 32px
 context.scale(20, 20);
-nextPieceCtx.scale(3, 3);
-overlayCtx.scale(2.91, 2.91);
+nextPieceCtx.scale(20, 20);
+//overlayCtx.scale(3, 3);
 
 function arenaSweep(){
     let rowCount = 1;
@@ -50,6 +52,8 @@ function createMatrix(w, h){
 };
 
 function createPiece(type){
+    player.nextPieceType = type;
+
     if(type === 'T'){
         return [
             [0, 0, 0],
@@ -63,9 +67,9 @@ function createPiece(type){
         ];
     }else if(type === 'L'){
         return [
-            [0, 3, 0],
-            [0, 3, 0],
-            [0, 3, 3],
+            [3, 0, 0],
+            [3, 0, 0],
+            [3, 3, 0],
         ];
     }else if(type === 'J'){
         return [
@@ -99,9 +103,12 @@ function draw(){
     //clear canvas
     context.fillStyle = '#000';
     context.fillRect(0, 0, canvas.width, canvas.height);
+    nextPieceCtx.clearRect(0, 0, nextPieceCanvas.width, nextPieceCanvas.height);
     //draw arena
     drawMatrix(arena, {x: 0, y: 0});
     drawMatrix(player.matrix, player.pos);
+    drawNextPieceMatrix(player.matrix);
+    //nextPieceImage(player.pos);
 };
 
 function drawMatrix(matrix, offset){
@@ -139,32 +146,45 @@ function merge(arena, player){
 function nextPiece(){
     //get next pieces
     const pieces = 'ILJOTSZ';
-
+    debugger;
     //generate piece for first time
     if(player.nextPiece === null){
-        player.matrix = createPiece(pieces[pieces.length *  Math.random() | 0]);
-        //player.nextPiece = createPiece(pieces[pieces.length *  Math.random() | 0]);
+        player.nextPiece = createPiece(pieces[pieces.length *  Math.random() | 0]);
+        player.matrix = player.nextPiece;
     } else {
         player.matrix = player.nextPiece;
-        //player.nextPiece = createPiece(pieces[pieces.length *  Math.random() | 0]);
+        player.nextPiece = createPiece(pieces[pieces.length *  Math.random() | 0]);
     }
-    //show next piece in window
-    //clear canvas
-    nextPieceCtx.fillStyle = '#000';
-    nextPieceCtx.fillRect(0, 0, canvas.width, canvas.height);
-    //drawNextPieceMatrix(player.nextPiece);
-    nextPieceImage();
+
+    //nextPieceImage(player.pos);
 };
 
-function nextPieceImage(){
+function nextPieceImage(offset){
     var img = new Image();
 
     img.src = "img/L1.png";
 
     img.onload = function(){
-        nextPieceCtx.drawImage(img, 0, 0);
-        overlayCtx.drawImage(img, 0, 0);
+        overlayCtx.clearRect(0, 0, canvasOverlay.width, canvasOverlay.height);
+        overlayCtx.drawImage(img, (9.25 * offset.x) - 12, (9.25 * offset.y) - 3);
     }; 
+};
+
+function smashBlock(arena, player){
+    debugger;
+    const [m, o] = [player.matrix, player.pos];
+    for(let y = 0; y < m.length; ++y){
+        for(let x = 0; x < m[y].length; ++x){
+            if(m[y][x] !== 0 &&
+                (arena[y + o.y] &&
+                arena[y + o.y][x + o.x]) !== 0){
+                //goal is to set collisions from 1 to 0 and let block go through
+                arena[y + o.y][x + o.x].fill(0);
+                return true;
+            };
+        };
+    };
+    return false;
 };
 
 //Transpose + Reverse = Rotate
@@ -212,6 +232,7 @@ function playerReset(){
     nextPiece();
     player.pos.y = 0;
     player.pos.x = (arena[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
+    
     //reset if collide at top meaning game over
     if(collide(arena, player)){
         arena.forEach(row => row.fill(0));
@@ -275,6 +296,7 @@ const player = {
     score: 0,
     nextPiece: null,
     nextPieceImage: null,
+    nextPieceType: null,
 }
 
 document.addEventListener('keydown', event => {
